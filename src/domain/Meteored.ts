@@ -34,6 +34,12 @@ export class Meteored {
   @Column({ name: "WIND", type: "varchar", length: 15, nullable: true })
   wind?: string;
 
+  @Column({ name: "IFPS", type: "varchar", length: 80, nullable: true })
+  ifps?: string;
+
+  @Column({ name: "DFPS", type: "varchar", length: 20, nullable: true })
+  dfps?: string;
+
   @Column({ name: 'CIDADE', type: 'number' })
   cidadeId?: number;
 

@@ -25,6 +25,8 @@ export async function MeteoredService() {
         name: $el.find(".text-0").text().trim(),
         temp: "",
         sens: "",
+        ifps: "",
+        dfps: "",
         tmax: $el.find(".max").text().trim(),
         tmin: $el.find(".min").text().trim(),
         wind: windText.length > 0 ? Math.max(...windText) + " km/h" : "",
@@ -43,6 +45,8 @@ export async function MeteoredService() {
     meteored[0].sens = $(".sensacion .txt-strng").text().trim();
     meteored[0].icon = icon;
     meteored[0].desc = $("#estado-actual .flex-top img").attr("alt") || "";
+    meteored[0].ifps = $('img.iUVi').attr('src') || "";
+    meteored[0].dfps = $("td span.row span.col.velocidad strong").first().text().trim();
   }
 
   for (const item of meteored) {
@@ -72,11 +76,11 @@ export async function MeteoredService() {
       weather.wind = item.wind;
       weather.desc = item.desc;
       weather.icon = item.icon;
+      weather.dfps = item.dfps;
 
       await repo.save(weather);      
     } catch (error) {
       console.error("Meteored error: ", error);
     }
-  }
-  console.log(`synchronized.`);
+  }  
 }

@@ -9,6 +9,7 @@ async function main() {
   cron.schedule("0 * * * *", async () => {
     await MeteoredService();
   });
+  console.log(`cronus started.`);
 }
 
 main().catch((err) => {
