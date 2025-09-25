@@ -44,7 +44,7 @@ export async function MeteoredService() {
     .filter((_, el) => $(el).find("img").length > 0)
     .first();
 
-  const icmo = moon.find("img").attr("src") || "";
+  const icmo = moon.find("img").attr("src")  || "";
   const dmoo  = moon.find("img").attr("alt") || ""; 
 
   if (meteored.length > 0) {
