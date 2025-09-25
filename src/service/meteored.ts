@@ -18,24 +18,34 @@ export async function MeteoredService() {
         .map((_, span) => $(span).text().trim())
         .get()
         .filter((v) => /^\d+$/.test(v))
-        .map(Number);
+        .map(Number);       
 
       return {
         date: rawDate ? parseData(rawDate) : "",
         name: $el.find(".text-0").text().trim(),
         temp: "",
         sens: "",
-        ifps: "",
         dfps: "",
         tmax: $el.find(".max").text().trim(),
         tmin: $el.find(".min").text().trim(),
         wind: windText.length > 0 ? Math.max(...windText) + " km/h" : "",
         desc: $el.find(".simbW").attr("alt") || "",
         icon: $el.find(".simbW").attr("src") || "",
-        wdir: $el.find(".col-s strong").text().trim()
+        wdir: $el.find(".col-s strong").text().trim(),
+        rain: $el.find(".precip .changeUnitR").text().trim(),
+        prov: $el.find(".precip .probabilidad").text().trim(),
+        moon: "",
+        icmo: ""
       };
     })
     .get();
+
+  const moon = $(".card.lunas .fases-luna .td-content")
+    .filter((_, el) => $(el).find("img").length > 0)
+    .first();
+
+  const icmo = moon.find("img").attr("src") || "";
+  const dmoo  = moon.find("img").attr("alt") || ""; 
 
   if (meteored.length > 0) {
     let parse = $("#estado-actual .flex-top img").attr("src") || "";
@@ -45,8 +55,9 @@ export async function MeteoredService() {
     meteored[0].sens = $(".sensacion .txt-strng").text().trim();
     meteored[0].icon = icon;
     meteored[0].desc = $("#estado-actual .flex-top img").attr("alt") || "";
-    meteored[0].ifps = $('img.iUVi').attr('src') || "";
     meteored[0].dfps = $("td span.row span.col.velocidad strong").first().text().trim();
+    meteored[0].moon = dmoo,
+    meteored[0].icmo = icmo
   }
 
   for (const item of meteored) {
@@ -77,6 +88,10 @@ export async function MeteoredService() {
       weather.desc = item.desc;
       weather.icon = item.icon;
       weather.dfps = item.dfps;
+      weather.rain = item.rain;
+      weather.prov = item.prov;
+      weather.moon = item.moon;
+      weather.icmo = item.icmo;
 
       await repo.save(weather);      
     } catch (error) {
