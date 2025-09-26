@@ -1,13 +1,21 @@
-import { Meteored } from "@/domain/Meteored.js";
+import { MeteoredRep } from "@/repository/MeteoredRep.js";
+import { MethourRep } from "@/repository/MethourRep.js";
+import { MoomRep } from "@/repository/MoomRep.js";
 import { parseData } from "@/utils/utils.js";
-import { oracle } from "@/config/source.js";
 import * as cheerio from "cheerio";
 
 export async function MeteoredService() {
-  const res = await fetch("https://www.tempo.pt/palmas_brasil-l116480.htm");
-  const html = await res.text();
+  const site = await fetch("https://www.tempo.pt/palmas_brasil-l116480.htm", {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8"
+    }
+  });
+  const html = await site.text();
   const $ = cheerio.load(html);
 
+  {/* Previsão semanal */}
   const meteored = $(".dia")
     .map((_, el) => {
       const $el = $(el);
@@ -25,7 +33,6 @@ export async function MeteoredService() {
         name: $el.find(".text-0").text().trim(),
         temp: "",
         sens: "",
-        dfps: "",
         tmax: $el.find(".max").text().trim(),
         tmin: $el.find(".min").text().trim(),
         wind: windText.length > 0 ? Math.max(...windText) + " km/h" : "",
@@ -34,18 +41,9 @@ export async function MeteoredService() {
         wdir: $el.find(".col-s strong").text().trim(),
         rain: $el.find(".precip .changeUnitR").text().trim(),
         prov: $el.find(".precip .probabilidad").text().trim(),
-        moon: "",
-        icmo: ""
       };
     })
     .get();
-
-  const moon = $(".card.lunas .fases-luna .td-content")
-    .filter((_, el) => $(el).find("img").length > 0)
-    .first();
-
-  const icmo = moon.find("img").attr("src")  || "";
-  const dmoo  = moon.find("img").attr("alt") || ""; 
 
   if (meteored.length > 0) {
     let parse = $("#estado-actual .flex-top img").attr("src") || "";
@@ -55,47 +53,74 @@ export async function MeteoredService() {
     meteored[0].sens = $(".sensacion .txt-strng").text().trim();
     meteored[0].icon = icon;
     meteored[0].desc = $("#estado-actual .flex-top img").attr("alt") || "";
-    meteored[0].dfps = $("td span.row span.col.velocidad strong").first().text().trim();
-    meteored[0].moon = dmoo,
-    meteored[0].icmo = icmo
-  }
+  }  
 
+  const meteoredRep = new MeteoredRep();
   for (const item of meteored) {
     try {
-      const repo = oracle.getRepository(Meteored);
-      let weather = await repo.findOneBy({ date: item.date });
-
-      if (!weather) {
-        weather = repo.create({
-          date: item.date,
-          cidadeId: 2
-        });
-      }
-
-      if (
-        item.name &&
-        item.name.toLowerCase() !== "hoje" &&
-        item.name.toLowerCase() !== "amanhã"
-      ) {
-        weather.name = item.name;
-      }
-
-      weather.temp = item.temp;
-      weather.sens = item.sens;
-      weather.tmax = item.tmax;
-      weather.tmin = item.tmin;
-      weather.wind = item.wind;
-      weather.desc = item.desc;
-      weather.icon = item.icon;
-      weather.dfps = item.dfps;
-      weather.rain = item.rain;
-      weather.prov = item.prov;
-      weather.moon = item.moon;
-      weather.icmo = item.icmo;
-
-      await repo.save(weather);      
+      await meteoredRep.save(item);    
     } catch (error) {
       console.error("Meteored error: ", error);
     }
   }  
+
+  {/* Calendario lunar */}
+  const moon = $(".card.lunas .fases-luna tr")
+    .map((_, tr) => {
+      return $(tr).find("td")
+        .map((_, td) => {
+          const div = $(td).find(".td-content");
+          const dayText = div.text().trim().split(" ")[0];
+          const img = div.find("img");
+  
+          if (img.length > 0) {
+            return {
+              date: dayText,
+              name: img.attr("alt"),
+              icon: img.attr("src")
+            };
+          }
+          return null;
+        })
+        .get();
+    }).get().filter(Boolean);
+  
+  const moonRep = new MoomRep();
+  for (const item of moon) {
+    try { 
+      await moonRep.save(item);     
+    } catch (error) {
+      console.error("Moon error: ", error);
+    }
+  } 
+
+  {/* Tempo por hora*/}
+  const methours = $(".tabla-horas.dos-semanas tr").map((_, el) => {
+    const img = $(el).find(".simbolo-pred img");
+    const more = $(el).next(".detalleH");  
+
+    if (!$(el).find(".text-princ").text().trim()) return null;
+    return {
+      hora: $(el).find(".text-princ").text().trim(), 
+      temp: $(el).find(".title-mod.changeUnitT").first().text().trim(),
+      sens: $(el).find(".descripcion .ocultar .changeUnitT").text().trim(), 
+      rain: more.find(".iLluv").parent().find(".prob span").first().text().trim(),
+      umid: more.find(".iHum").parent().find("strong").text().trim(), 
+      desc: $(el).find(".descripcion strong").text().trim(),
+      wind: more.find(".iViM").parent().find("strong").text().trim(),
+      burs: more.find(".iViR").parent().find("strong").text().trim(),
+      pres: more.find(".iPres").parent().find("strong").text().trim(),
+      ifps: $(el).find(".iUVi").parent().find("strong").text().trim(),
+      icon: img.attr("src") || "",
+      };
+    }).get().filter(Boolean);
+
+  const methourRep = new MethourRep();
+  for (const item of methours) {
+    try {
+      await methourRep.save(item);
+    } catch (error) {
+      console.error("Erro ao salvar Methour:", error);
+    }
+  }
 }

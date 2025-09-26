@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, Jo
 import { Cidade } from '@/domain/Cidade.js';
 
 
-@Entity({ schema: 'ADMIN', name: 'METEORED' })
+@Entity({ schema: 'WEATHER', name: 'METEORED' })
 export class Meteored {
   @PrimaryGeneratedColumn({ name: 'ID', type: 'number' })
   id!: number;
@@ -34,20 +34,11 @@ export class Meteored {
   @Column({ name: "WIND", type: "varchar", length: 15, nullable: true })
   wind?: string;
 
-  @Column({ name: "DFPS", type: "varchar", length: 20, nullable: true })
-  dfps?: string;
-
   @Column({ name: "RAIN", type: "varchar", length: 20, nullable: true })
   rain?: string;
 
   @Column({ name: "PROV", type: "varchar", length: 20, nullable: true })
   prov?: string;
-
-  @Column({ name: "MOON", type: "varchar", length: 20, nullable: true })
-  moon?: string;
-
-  @Column({ name: "ICMO", type: "varchar", length: 80, nullable: true })
-  icmo?: string;
 
   @Column({ name: 'CIDADE', type: 'number' })
   cidadeId?: number;
