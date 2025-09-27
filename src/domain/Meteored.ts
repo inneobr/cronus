@@ -34,6 +34,9 @@ export class Meteored {
   @Column({ name: "WIND", type: "varchar", length: 15, nullable: true })
   wind?: string;
 
+  @Column({ name: 'BURS', type: 'varchar', length: 20, nullable: true })
+  burs?: string;
+
   @Column({ name: "RAIN", type: "varchar", length: 20, nullable: true })
   rain?: string;
 

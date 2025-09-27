@@ -15,7 +15,7 @@ export async function MeteoredService() {
   const html = await site.text();
   const $ = cheerio.load(html);
 
-  {/* Previsão semanal */}
+  {/* Previsão semanal */ }
   const meteored = $(".dia")
     .map((_, el) => {
       const $el = $(el);
@@ -26,7 +26,7 @@ export async function MeteoredService() {
         .map((_, span) => $(span).text().trim())
         .get()
         .filter((v) => /^\d+$/.test(v))
-        .map(Number);       
+        .map(Number);
 
       return {
         date: rawDate ? parseData(rawDate) : "",
@@ -35,10 +35,10 @@ export async function MeteoredService() {
         sens: "",
         tmax: $el.find(".max").text().trim(),
         tmin: $el.find(".min").text().trim(),
-        wind: windText.length > 0 ? Math.max(...windText) + " km/h" : "",
+        wind: windText.length > 0 ? String(Math.min(...windText)) : "",
+        burs: windText.length > 1 ? String(Math.max(...windText)) : "",
         desc: $el.find(".simbW").attr("alt") || "",
         icon: $el.find(".simbW").attr("src") || "",
-        wdir: $el.find(".col-s strong").text().trim(),
         rain: $el.find(".precip .changeUnitR").text().trim(),
         prov: $el.find(".precip .probabilidad").text().trim(),
       };
@@ -53,18 +53,18 @@ export async function MeteoredService() {
     meteored[0].sens = $(".sensacion .txt-strng").text().trim();
     meteored[0].icon = icon;
     meteored[0].desc = $("#estado-actual .flex-top img").attr("alt") || "";
-  }  
+  }
 
   const meteoredRep = new MeteoredRep();
   for (const item of meteored) {
     try {
-      await meteoredRep.save(item);    
+      await meteoredRep.save(item);
     } catch (error) {
       console.error("Meteored error: ", error);
     }
-  }  
+  }
 
-  {/* Calendario lunar */}
+  {/* Calendario lunar */ }
   const moon = $(".card.lunas .fases-luna tr")
     .map((_, tr) => {
       return $(tr).find("td")
@@ -72,7 +72,7 @@ export async function MeteoredService() {
           const div = $(td).find(".td-content");
           const dayText = div.text().trim().split(" ")[0];
           const img = div.find("img");
-  
+
           if (img.length > 0) {
             return {
               date: dayText,
@@ -84,36 +84,42 @@ export async function MeteoredService() {
         })
         .get();
     }).get().filter(Boolean);
-  
+
   const moonRep = new MoomRep();
   for (const item of moon) {
-    try { 
-      await moonRep.save(item);     
+    try {
+      await moonRep.save(item);
     } catch (error) {
       console.error("Moon error: ", error);
     }
-  } 
+  }
 
-  {/* Tempo por hora*/}
+  {/* Tempo por hora*/ }
   const methours = $(".tabla-horas.dos-semanas tr").map((_, el) => {
     const img = $(el).find(".simbolo-pred img");
-    const more = $(el).next(".detalleH");  
+    const more = $(el).next(".detalleH");
 
     if (!$(el).find(".text-princ").text().trim()) return null;
     return {
-      hora: $(el).find(".text-princ").text().trim(), 
+      date: meteored[0].date,
+      hora: $(el).find(".text-princ").text().trim(),
       temp: $(el).find(".title-mod.changeUnitT").first().text().trim(),
-      sens: $(el).find(".descripcion .ocultar .changeUnitT").text().trim(), 
-      rain: more.find(".iLluv").parent().find(".prob span").first().text().trim(),
-      umid: more.find(".iHum").parent().find("strong").text().trim(), 
+      sens: $(el).find(".descripcion .ocultar .changeUnitT").text().trim(),
+      rain: more.find(".iLluv").parent().find("span.cantidad-lluvia.changeUnitR").first().text().trim(),
+      prov: more.find(".iLluv").parent().find(".prob span").first().text().trim(),
+      clod: more.find(".iNub").parent().find("strong").text().trim(),
+      fogs: more.find(".iNiebla").parent().find("strong").text().trim().toLowerCase(),
+      visb: more.find(".iVis").parent().find("strong").text().trim(),
+      dews: more.find(".iPRocio").parent().find("strong").text().trim(),
+      umid: more.find(".iHum").parent().find("strong").text().trim(),
       desc: $(el).find(".descripcion strong").text().trim(),
       wind: more.find(".iViM").parent().find("strong").text().trim(),
       burs: more.find(".iViR").parent().find("strong").text().trim(),
       pres: more.find(".iPres").parent().find("strong").text().trim(),
       ifps: $(el).find(".iUVi").parent().find("strong").text().trim(),
       icon: img.attr("src") || "",
-      };
-    }).get().filter(Boolean);
+    };
+  }).get().filter(Boolean);
 
   const methourRep = new MethourRep();
   for (const item of methours) {

@@ -27,6 +27,7 @@ export class MeteoredRep {
         weather.tmax = dto.tmax;
         weather.tmin = dto.tmin;
         weather.wind = dto.wind;
+        weather.burs = dto.burs;
         weather.desc = dto.desc;
         weather.icon = dto.icon;
         weather.rain = dto.rain;

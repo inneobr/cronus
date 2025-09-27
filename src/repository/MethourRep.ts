@@ -15,9 +15,15 @@ export class MethourRep {
         }    
 
         methour.hora = dto.hora,
+        methour.date = dto.date,
         methour.temp = dto.temp,
         methour.sens = dto.sens,
         methour.rain = dto.rain,
+        methour.prov = dto.prov, 
+        methour.clod = dto.clod, 
+        methour.fogs = dto.fogs,
+        methour.visb = dto.visb,
+        methour.dews = dto.dews,
         methour.umid = dto.umid,
         methour.desc = dto.desc,
         methour.wind = dto.wind,

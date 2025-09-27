@@ -8,23 +8,30 @@ export interface MeteoredDTO {
   tmax?: string;
   tmin?: string;
   wind?: string;
+  burs?: string;
   rain?: string;
   prov?: string;
 }
 
 export type MethourDTO = {
-    hora: string;
-    temp?: string;
-    sens?: string;
-    rain?: string;
-    umid?: string;
-    desc?: string;
-    wind?: string;
-    burs?: string;
-    pres?: string;
-    ifps?: string;
-    icon?: string;
-    cidadeId?: number;
+  date: string;
+  hora: string;
+  temp?: string;
+  sens?: string;
+  rain?: string;
+  prov?: string;
+  clod?: string;
+  fogs?: string;
+  visb?: string;
+  dews?: string;
+  umid?: string;
+  desc?: string;
+  wind?: string;
+  burs?: string;
+  pres?: string;
+  ifps?: string;
+  icon?: string;
+  cidadeId?: number;
 };
 
 export interface MoomDTO {
