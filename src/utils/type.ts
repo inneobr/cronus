@@ -39,3 +39,22 @@ export interface MoomDTO {
   name?: string;
   icon?: string;
 }
+
+export interface TodayDTO {
+  indi: string;
+  desc?: string;
+  valu?: string;
+  info?: string;  
+  pluz?: string;
+  nsun?: string;
+  mday?: string;
+  psun?: string;
+  uluz?: string;
+}
+
+export interface JobDTO {
+    name: string;
+    amount?: string;
+    details?: string;
+    cidadeId?: number;
+}
