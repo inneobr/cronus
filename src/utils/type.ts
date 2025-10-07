@@ -58,3 +58,11 @@ export interface JobDTO {
     details?: string;
     cidadeId?: number;
 }
+
+export interface PrefeituraDTO {
+  uri: string;
+  title: string;
+  descricao: string;
+  thumbnail: string;
+  cidadeId?: number;
+}
