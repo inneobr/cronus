@@ -27,29 +27,51 @@ export class JobRep {
     }
 
     async clearAll() {
-        const queryRunner = oracle.createQueryRunner();
+    const queryRunner = oracle.createQueryRunner();
 
-        await queryRunner.connect();
-        await queryRunner.startTransaction();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-        try {
-            await queryRunner.query(`TRUNCATE TABLE INFORMATIVE.JOBS`);
-            await queryRunner.query(`DROP SEQUENCE INFORMATIVE.SEQJOBS`);
-            await queryRunner.query(`
-        CREATE SEQUENCE INFORMATIVE.SEQJOBS
-        START WITH 1
-        INCREMENT BY 1
-        NOCACHE
-        NOCYCLE
-      `);
+    try {
+        await queryRunner.query(`TRUNCATE TABLE INFORMATIVE.JOBS`);
 
-            await queryRunner.commitTransaction();
-        } catch (err) {
-            await queryRunner.rollbackTransaction();
-            console.error("Erro ao limpar tabela e resetar sequence:", err);
-            throw err;
-        } finally {
-            await queryRunner.release();
-        }
+        // Tenta apagar a sequence apenas se ela existir
+        await queryRunner.query(`
+            BEGIN
+                EXECUTE IMMEDIATE 'DROP SEQUENCE INFORMATIVE.SEQJOBS';
+            EXCEPTION
+                WHEN OTHERS THEN
+                    IF SQLCODE != -2289 THEN -- ORA-02289: sequence does not exist
+                        RAISE;
+                    END IF;
+            END;
+        `);
+
+        // Cria a sequence (caso tenha sido apagada ou nunca existiu)
+        await queryRunner.query(`
+            BEGIN
+                EXECUTE IMMEDIATE '
+                    CREATE SEQUENCE INFORMATIVE.SEQJOBS
+                    START WITH 1
+                    INCREMENT BY 1
+                    NOCACHE
+                    NOCYCLE
+                ';
+            EXCEPTION
+                WHEN OTHERS THEN
+                    IF SQLCODE != -955 THEN -- ORA-00955: name is already used by an existing object
+                        RAISE;
+                    END IF;
+            END;
+        `);
+
+        await queryRunner.commitTransaction();
+    } catch (err) {
+        await queryRunner.rollbackTransaction();
+        console.error("Erro ao limpar tabela e resetar sequence:", err);
+        throw err;
+    } finally {
+        await queryRunner.release();
     }
+}
 }

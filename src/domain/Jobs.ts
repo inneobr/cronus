@@ -12,7 +12,7 @@ export class Job {
   @Column({ name: 'AMOUNT', type: 'varchar', length: 5, nullable: true })
   amount?: string;
 
-  @Column({ name: 'DETAILS', type: 'varchar', length: 255, nullable: true })
+  @Column({ name: 'DETAILS', type: 'varchar', length: 5000, nullable: true })
   details?: string;
 
   @Column({ name: 'CIDADE', type: 'number', nullable: true })
