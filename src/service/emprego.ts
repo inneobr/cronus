@@ -1,10 +1,9 @@
-import { JobRep } from "@/repository/JobsRep.js";
+import { EmpregoRep } from "@/repository/EmpregoRep.js";
+import { EmpregoDTO } from "@/utils/type.js";
 import * as cheerio from "cheerio";
-import { JobDTO } from "@/utils/type.js";
 
 export default async function EmpregoService() {
   try {
-    // Faz a requisição da página de vagas
     const response = await fetch("https://pmp.pr.gov.br/website/views/vagasEmprego.php", {
       headers: {
         "User-Agent": "Mozilla/5.0",
@@ -13,14 +12,15 @@ export default async function EmpregoService() {
       }
     });
 
-    const html = await response.text();
+    if(!response){
+      console.log('conexão emprego recusada: ', new Date())
+      return;
+    }
 
-    // Carrega o html com cheerio
+    const html = await response.text();
     const $ = cheerio.load(html);
 
-    const vagas: JobDTO[] = [];
-
-    // Itera pelas linhas da tabela
+    const vagas: EmpregoDTO[] = [];
     $("table tbody tr").each((_, el) => {
       const tds = $(el).find("td");
 
@@ -30,19 +30,12 @@ export default async function EmpregoService() {
       const amount = $(tds[1]).text().trim();
       const rawDetails = $(tds[2]).html() || '';
 
-      // Manipula o HTML dos detalhes para limpar tags e substituir por \n
       const $details = cheerio.load(rawDetails);
-
-      // Troca <br> por quebra de linha
       $details('br').replaceWith('\n');
-      // Troca <p> por quebra de linha e seu texto
       $details('p').replaceWith((_, el) => '\n' + $details(el).text() + '\n');
-      // Troca <div> por quebra de linha e seu texto
       $details('div').replaceWith((_, el) => '\n' + $details(el).text() + '\n');
 
       let details = $details.text();
-
-      // Remove quebras de linha duplicadas e espaços extras
       details = details.replace(/\n{2,}/g, '\n').trim();
 
       vagas.push({
@@ -53,16 +46,25 @@ export default async function EmpregoService() {
       });
     });
 
-    // Instancia o repositório e limpa as vagas antigas
-    const jobRep = new JobRep();
-    await jobRep.clearAll();
-
-    // Salva as vagas processadas no banco
+    const empregoRep = new EmpregoRep();
     for (const vaga of vagas) {
       try {
-        await jobRep.save(vaga);
+        await empregoRep.save(vaga);
       } catch (error) {
         console.error("Erro ao salvar vaga:", vaga.name, error);
+      }
+    }
+
+    const vagasBanco = await empregoRep.findByCidade(2);
+    const nomesAtuais = new Set(vagas.map(v => v.name));
+
+    for (const vaga of vagasBanco) {
+      if (!nomesAtuais.has(vaga.name)) {
+        try {          
+          await empregoRep.update(vaga.id);
+        } catch (error) {
+          console.error("Erro ao desativar vaga:", vaga.name, error);
+        }
       }
     }
 

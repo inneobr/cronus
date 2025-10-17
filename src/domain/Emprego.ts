@@ -1,8 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Cidade } from '@/domain/Cidade.js';
 
-@Entity({ schema: 'INFORMATIVE', name: 'JOBS' })
-export class Job {
+@Entity({ schema: 'INFORMATIVE', name: 'EMPREGO' })
+export class Emprego {
   @PrimaryGeneratedColumn({ name: 'ID', type: 'number' })
   id!: number;
 
@@ -18,9 +18,12 @@ export class Job {
   @Column({ name: 'CIDADE', type: 'number', nullable: true })
   cidadeId?: number;
 
+  @CreateDateColumn({ name: 'WAXED', type: 'timestamp', default: () => 'NULL' })
+  waxed?: Date;
+
   @ManyToOne(() => Cidade)
   @JoinColumn({ name: 'CIDADE', referencedColumnName: 'id' })
-  cidade?: Cidade;
+  cidade?: Cidade;  
 
   @CreateDateColumn({ name: 'PUBLISH', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   publish?: Date;

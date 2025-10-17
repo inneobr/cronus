@@ -52,7 +52,7 @@ export interface TodayDTO {
   uluz?: string;
 }
 
-export interface JobDTO {
+export interface EmpregoDTO {
     name: string;
     amount?: string;
     details?: string;

@@ -5,7 +5,7 @@ import * as cheerio from "cheerio";
 export default async function PrefeituraService() {
     const url = "https://pmp.pr.gov.br/website/views/maisNoticias.php";
 
-    const site = await fetch(url, {
+    const response = await fetch(url, {
         headers: {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -13,7 +13,12 @@ export default async function PrefeituraService() {
         }
     });
 
-    const html = await site.text();
+    if(!response){
+        console.log('conexão noticias prefeitura foi recusada: ', new Date())
+        return;
+    }
+
+    const html = await response.text();
     const $ = cheerio.load(html);
 
     const page = $(".col").toArray();
@@ -59,7 +64,7 @@ export default async function PrefeituraService() {
     );
 
     const prefeituraRep = new PrefeituraRep();
-    for (const noticia of noticias.filter(Boolean)) {
+    for (const noticia of noticias.filter(Boolean).reverse()) {
         try {
             await prefeituraRep.save(noticia as PrefeituraDTO);
         } catch (error) {
