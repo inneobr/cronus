@@ -16,7 +16,7 @@ export class EmpregoRep {
         if (!emprego) {
             emprego = repo.create({
                 name: dto.name,
-                cidade: { id: dto.cidadeId ?? 2 }
+                cidade: { id: dto.cidadeId }
             });
         }
 

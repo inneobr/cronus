@@ -5,12 +5,15 @@ import { MeteoredDTO } from "@/utils/type.js";
 export class MeteoredRep {
     async save(dto: MeteoredDTO) {
         const repo = oracle.getRepository(Meteored);
-        let weather = await repo.findOneBy({ date: dto.date });
+        let meteored = await repo.findOneBy({ 
+            date: dto.date, 
+            cidadeId: dto.cidadeId 
+        });
 
-        if (!weather) {
-            weather = repo.create({
+        if (!meteored) {
+            meteored = repo.create({
                 date: dto.date,
-                cidadeId: 2
+                cidadeId: dto.cidadeId
             });
         }
 
@@ -19,20 +22,20 @@ export class MeteoredRep {
             dto.name.toLowerCase() !== "hoje" &&
             dto.name.toLowerCase() !== "amanhã"
         ) {
-            weather.name = dto.name;
+            meteored.name = dto.name;
         }
 
-        weather.temp = dto.temp;
-        weather.sens = dto.sens;
-        weather.tmax = dto.tmax;
-        weather.tmin = dto.tmin;
-        weather.wind = dto.wind;
-        weather.burs = dto.burs;
-        weather.desc = dto.desc;
-        weather.icon = dto.icon;
-        weather.rain = dto.rain;
-        weather.prov = dto.prov;
+        meteored.temp = dto.temp;
+        meteored.sens = dto.sens;
+        meteored.tmax = dto.tmax;
+        meteored.tmin = dto.tmin;
+        meteored.wind = dto.wind;
+        meteored.burs = dto.burs;
+        meteored.desc = dto.desc;
+        meteored.icon = dto.icon;
+        meteored.rain = dto.rain;
+        meteored.prov = dto.prov;
 
-        await repo.save(weather);
+        await repo.save(meteored);
     }
 }

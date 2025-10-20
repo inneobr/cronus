@@ -11,11 +11,12 @@ export interface MeteoredDTO {
   burs?: string;
   rain?: string;
   prov?: string;
+  cidadeId?: number;
 }
 
-export type MethourDTO = {
-  date: string;
-  hora: string;
+export type NexthourDTO = {
+  date:  string;
+  hour:  string;
   temp?: string;
   sens?: string;
   rain?: string;
@@ -34,22 +35,27 @@ export type MethourDTO = {
   cidadeId?: number;
 };
 
-export interface MoomDTO {
-  date: string;
+export interface LunarDTO {
+  day:   string;
+  date?: string;
   name?: string;
   icon?: string;
+  perc?: string;
 }
 
 export interface TodayDTO {
+  date: string;
   indi: string;
   desc?: string;
   valu?: string;
-  info?: string;  
+  info?: string; 
+  resu?: string;   
   pluz?: string;
   nsun?: string;
   mday?: string;
   psun?: string;
   uluz?: string;
+  cidadeId?: number;
 }
 
 export interface EmpregoDTO {
@@ -65,4 +71,12 @@ export interface PrefeituraDTO {
   descricao: string;
   thumbnail: string;
   cidadeId?: number;
+}
+
+export interface GroqResponse {
+  choices?: {
+    message?: {
+      content?: string;
+    };
+  }[];
 }

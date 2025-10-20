@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, Jo
 import { Cidade } from '@/domain/Cidade.js';
 
 
-@Entity({ schema: 'WEATHER', name: 'METEORED' })
+@Entity({ name: 'METEORED' })
 export class Meteored {
   @PrimaryGeneratedColumn({ name: 'ID', type: 'number' })
   id!: number;
@@ -49,7 +49,4 @@ export class Meteored {
   @ManyToOne(() => Cidade)
   @JoinColumn({ name: 'CIDADE', referencedColumnName: 'id' })
   cidade?: Cidade;
-
-  @CreateDateColumn({ name: "PUBLISH", type: "timestamp", default: () => "CURRENT_TIMESTAMP"})
-  publish?: Date;
 }

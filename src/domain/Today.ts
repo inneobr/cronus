@@ -1,10 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn, ManyToMany } from 'typeorm';
 import { Cidade } from '@/domain/Cidade.js';
+import { Meteored } from './Meteored.js';
 
-@Entity({ schema: 'WEATHER', name: 'TODAY' })
+@Entity({ name: 'TODAY' })
 export class Today {
   @PrimaryGeneratedColumn({ name: 'ID', type: 'number' })
   id!: number;
+
+  @Column({ name: "DATE", type: "varchar", length: 10 })
+  date?: string;
 
   @Column({ name: 'INDI', type: 'varchar', length: 10, unique: true })
   indi!: string;
@@ -17,6 +21,9 @@ export class Today {
 
   @Column({ name: 'INFO', type: 'varchar', length: 255, nullable: true })
   info?: string;
+
+  @Column({ name: "RESU", type: "varchar", length: 5000, nullable: true })
+  resu?: string;
 
   @Column({ name: 'PLUZ', type: 'varchar', length: 5, nullable: true })
   pluz?: string;
@@ -39,7 +46,4 @@ export class Today {
   @ManyToOne(() => Cidade)
   @JoinColumn({ name: 'CIDADE', referencedColumnName: 'id' })
   cidade?: Cidade;
-
-  @CreateDateColumn({ name: 'PUBLISH', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  publish?: Date;
 }

@@ -2,7 +2,7 @@ import { EmpregoRep } from "@/repository/EmpregoRep.js";
 import { EmpregoDTO } from "@/utils/type.js";
 import * as cheerio from "cheerio";
 
-export default async function EmpregoService() {
+export default async function EmpregoService(): Promise<string> {
   try {
     const response = await fetch("https://pmp.pr.gov.br/website/views/vagasEmprego.php", {
       headers: {
@@ -14,7 +14,7 @@ export default async function EmpregoService() {
 
     if(!response){
       console.log('conexão emprego recusada: ', new Date())
-      return;
+      return 'conexão emprego recusada';
     }
 
     const html = await response.text();
@@ -42,7 +42,7 @@ export default async function EmpregoService() {
         name,
         amount,
         details,
-        cidadeId: 2
+        cidadeId: 1
       });
     });
 
@@ -71,4 +71,5 @@ export default async function EmpregoService() {
   } catch (error) {
     console.error("Erro ao buscar ou processar vagas:", error);
   }
+  return "Sine success"
 }

@@ -2,7 +2,7 @@ import { PrefeituraRep } from "@/repository/PrefeituraRep.js";
 import { PrefeituraDTO } from "@/utils/type.js";
 import * as cheerio from "cheerio";
 
-export default async function PrefeituraService() {
+export default async function PrefeituraService(): Promise<string> {
     const url = "https://pmp.pr.gov.br/website/views/maisNoticias.php";
 
     const response = await fetch(url, {
@@ -15,7 +15,7 @@ export default async function PrefeituraService() {
 
     if(!response){
         console.log('conexão noticias prefeitura foi recusada: ', new Date())
-        return;
+        return "conexão emprego recusada";
     }
 
     const html = await response.text();
@@ -54,7 +54,7 @@ export default async function PrefeituraService() {
                     title,
                     descricao,
                     thumbnail,
-                    cidade: 2,
+                    cidade: 1,
                 };
             } catch (erro) {
                 console.error(`Erro ao acessar ${uri}`, erro);
@@ -71,4 +71,5 @@ export default async function PrefeituraService() {
             console.error("Erro ao salvar notícia:", error);
         }
     }
+    return "Noticias Prefeirura success";
 }

@@ -1,11 +1,11 @@
 import { MeteoredRep } from "@/repository/MeteoredRep.js";
-import { MethourRep } from "@/repository/MethourRep.js";
-import { MoomRep } from "@/repository/MoomRep.js";
+import { NexthourRep } from "@/repository/NexthourRep.js";
+import { LunarRep } from "@/repository/LunarRep.js";
 import { TodayRep } from "@/repository/TodayRep.js";
 import { parseData } from "@/utils/utils.js";
 import * as cheerio from "cheerio";
 
-export async function MeteoredService() {
+export async function MeteoredService(): Promise<string> {
   try {
     const response = await fetch("https://www.tempo.pt/palmas_brasil-l116480.htm", {
       headers: {
@@ -17,13 +17,12 @@ export async function MeteoredService() {
 
     if (!response) {
       console.log('conexão meteored recusada: ', new Date())
-      return;
+      return "conexão emprego recusada";
     }
 
     const html = await response.text();
     const $ = cheerio.load(html);
 
-    {/* Previsão semanal */ }
     const meteored = $(".dia")
       .map((_, el) => {
         const $el = $(el);
@@ -49,6 +48,7 @@ export async function MeteoredService() {
           icon: $el.find(".simbW").attr("src") || "",
           rain: $el.find(".precip .changeUnitR").text().trim(),
           prov: $el.find(".precip .probabilidad").text().trim(),
+          cidadeId: 1
         };
       })
       .get();
@@ -72,15 +72,14 @@ export async function MeteoredService() {
       }
     }
 
-    {/* Tempo por hora*/ }
-    const methours = $(".tabla-horas.dos-semanas tr").map((_, el) => {
+    const nexthours = $(".tabla-horas.dos-semanas tr").map((_, el) => {
       const img = $(el).find(".simbolo-pred img");
       const more = $(el).next(".detalleH");
 
       if (!$(el).find(".text-princ").text().trim()) return null;
       return {
-        date: meteored[0].date,
-        hora: $(el).find(".text-princ").text().trim(),
+        date: meteored?.[0]?.date ?? new Date().toISOString().slice(0, 10),
+        hour: $(el).find(".text-princ").text().trim(),
         temp: $(el).find(".title-mod.changeUnitT").first().text().trim(),
         sens: $(el).find(".descripcion .ocultar .changeUnitT").text().trim(),
         rain: more.find(".iLluv").parent().find("span.cantidad-lluvia.changeUnitR").first().text().trim(),
@@ -99,22 +98,23 @@ export async function MeteoredService() {
       };
     }).get().filter(Boolean);
 
-    const methourRep = new MethourRep();
-    for (const item of methours) {
+    const nexthourRep = new NexthourRep();
+    for (const item of nexthours) {
       try {
-        await methourRep.save(item);
+        if(item.hour === '24:00') item.hour = '00:00';
+        await nexthourRep.save(item);
       } catch (error) {
-        console.error("Erro ao salvar Methour:", error);
+        console.error("Não foi possivel salvar as proximas horas:", error);
       }
     }
 
-    {/* Today qualite air */ }
-    const Today = (() => {
+    const today = (() => {
       const card = $(".card.salida_sol.salida-puesta-sol");
       const $air = $('#calidad-aire');
       if (!card.length) return null;
 
       return {
+        date: meteored?.[0]?.date ?? new Date().toISOString().slice(0, 10),
         pluz: card.find(".col:contains('Primeira luz') strong").text().trim(),
         nsun: card.find(".col:contains('Nascer do Sol') strong").text().trim(),
         mday: card.find(".col:contains('Meio-dia') strong").text().trim(),
@@ -124,13 +124,14 @@ export async function MeteoredService() {
         desc: $air.find('.tipo-calidad').text().trim(),
         valu: $air.find('.tipo-contaminante').text().trim(),
         info: $air.find('.lista-calidad li').eq(0).text().trim(),
+        cidade: 1,
       };
     })();
 
-    if (Today !== null) {
+    if (today !== null) {
       const todayRep = new TodayRep();
       try {
-        await todayRep.save(Today);
+        await todayRep.save(today);
       } catch (error) {
         console.error("Today error: ", error);
       }
@@ -138,8 +139,7 @@ export async function MeteoredService() {
       console.warn("No data available for Today.");
     }
 
-    {/* Calendario lunar */ }
-    const moon = $(".card.lunas .fases-luna tr")
+    const lunar = $(".card.lunas .fases-luna tr")
       .map((_, tr) => {
         return $(tr).find("td")
           .map((_, td) => {
@@ -149,29 +149,30 @@ export async function MeteoredService() {
 
             if (img.length > 0) {
               return {
-                date: dayText,
+                day: dayText.padStart(2, '0'),
                 name: img.attr("alt"),
                 icon: img.attr("src")
               };
-            }
-            return null;
+            }    
+            console.log('falha calendario lunar')        
           })
           .get();
       }).get().filter(Boolean);
 
-    const moonRep = new MoomRep();
-    for (const item of moon) {
+    const lunarRep = new LunarRep();
+    for (const item of lunar) {
       try {
-        await moonRep.save(item);
+        await lunarRep.save(item);
       } catch (error) {
-        console.error("Moon error: ", error);
+        console.error("Não foi possível salvar calendário lunar: ", error);
       }
     }
     await WeekService();
   } catch (error) {
     console.error(`Erro ao acessar`, error);
-    return null;
+    return 'erro ao buscar dados meteorologicos';
   }
+  return "meteored success"
 }
 
 async function WeekService() {
@@ -191,7 +192,6 @@ async function WeekService() {
     const html = await response.text();
     const $ = cheerio.load(html);
 
-    {/* Previsão semanal */ }
     const meteored = $(".dia")
       .map((_, el) => {
         const $el = $(el);
@@ -233,4 +233,5 @@ async function WeekService() {
     console.error(`Erro ao acessar`, error);
     return null;
   }
+  return "meteored success"
 }

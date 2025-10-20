@@ -10,7 +10,7 @@ export class PrefeituraRep {
     if (!noticia) {
       noticia = repo.create({
         uri: dto.uri,
-        cidadeId: 2,
+        cidadeId: dto.cidadeId,
       });
     }
 
