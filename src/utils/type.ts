@@ -37,7 +37,6 @@ export type NexthourDTO = {
 
 export interface LunarDTO {
   day:   string;
-  date?: string;
   name?: string;
   icon?: string;
   perc?: string;

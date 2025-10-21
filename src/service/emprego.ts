@@ -12,9 +12,9 @@ export default async function EmpregoService(): Promise<string> {
       }
     });
 
-    if(!response){
-      console.log('conexão emprego recusada: ', new Date())
-      return 'conexão emprego recusada';
+    if (!response) {
+      console.log('conexão sine recusada: ', new Date());
+      return 'conexão sine recusada';
     }
 
     const html = await response.text();
@@ -46,30 +46,33 @@ export default async function EmpregoService(): Promise<string> {
       });
     });
 
+    // 👉 ORDENAR VAGAS POR NOME ANTES DE SALVAR
+    vagas.sort((a, b) => a.name.localeCompare(b.name));
+
     const empregoRep = new EmpregoRep();
-    for (const vaga of vagas) {
+    for (const item of vagas) {
       try {
-        await empregoRep.save(vaga);
+        await empregoRep.save(item);
       } catch (error) {
-        console.error("Erro ao salvar vaga:", vaga.name, error);
+        console.error(`EMPREGO, falha ao salvar: ${item.name}, causa:`, error);
       }
     }
 
     const vagasBanco = await empregoRep.findByCidade(2);
-    const nomesAtuais = new Set(vagas.map(v => v.name));
+    const vagasAtuais = new Set(vagas.map(v => v.name));
 
-    for (const vaga of vagasBanco) {
-      if (!nomesAtuais.has(vaga.name)) {
-        try {          
-          await empregoRep.update(vaga.id);
+    for (const item of vagasBanco.filter(Boolean)) {
+      if (!vagasAtuais.has(item.name)) {
+        try {
+          await empregoRep.update(item.id);
         } catch (error) {
-          console.error("Erro ao desativar vaga:", vaga.name, error);
+          console.error(`EMPREGO, falha ao encerrar vaga: ${item.name}, causa:`, error);
         }
       }
     }
 
   } catch (error) {
-    console.error("Erro ao buscar ou processar vagas:", error);
+    console.error(`Conexão recusada:\nhttps://pmp.pr.gov.br/website/views/vagasEmprego.php`, error);
   }
-  return "Sine success"
+  return "Sine success";
 }

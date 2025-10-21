@@ -9,9 +9,6 @@ export class Lunar {
   @Column({ name: "DAY", type: "varchar", length: 10 })
   day?: string;
 
-  @Column({ name: "DATE", type: "varchar", length: 10 })
-  date?: string;
-
   @Column({ name: "NAME", type: "varchar", length: 30, nullable: true })
   name?: string;
 
@@ -20,8 +17,4 @@ export class Lunar {
 
   @Column({ name: "PERC", type: "varchar", length: 10, nullable: true })
   perc?: string;
-
-  @ManyToMany(() => Meteored)
-  @JoinColumn({ name: 'DATE', referencedColumnName: 'date' })
-  meteored?: Meteored;
 }

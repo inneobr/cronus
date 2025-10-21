@@ -9,18 +9,19 @@ export class EmpregoRep {
         let emprego = await repo.findOne({
             where: {
                 name: dto.name,
-                details: dto.details
+                details: dto.details,
+                cidadeId: dto.cidadeId
             }
         });
 
         if (!emprego) {
             emprego = repo.create({
                 name: dto.name,
-                cidade: { id: dto.cidadeId }
+                cidadeId: dto.cidadeId
             });
         }
 
-        if (dto.amount !== undefined) emprego.amount = dto.amount;
+        if (dto.amount  !== undefined) emprego.amount  = dto.amount;
         if (dto.details !== undefined) emprego.details = dto.details;
 
         await repo.save(emprego);
@@ -39,11 +40,5 @@ export class EmpregoRep {
      async update(id: number) {
         const repo = oracle.getRepository(Emprego);        
         repo.update(id, { waxed: new Date() });
-    }
-
-    async finalizar(id: number): Promise<void> {
-        const repo = oracle.getRepository(Emprego);
-        const dataLocal = new Date();
-        await repo.update(id, { waxed: dataLocal });
     }
 }

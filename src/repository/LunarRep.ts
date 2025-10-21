@@ -10,7 +10,6 @@ export class LunarRep {
     if (!lunar) {
       lunar = repo.create({ day: dto.day });
     }
-    lunar.date = dto.date;
     lunar.name = dto.name;
     lunar.icon = dto.icon;
     lunar.perc = dto.perc;

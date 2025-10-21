@@ -1,6 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn, ManyToMany } from 'typeorm';
 import { Cidade } from '@/domain/Cidade.js';
-import { Meteored } from './Meteored.js';
 
 @Entity({ name: 'TODAY' })
 export class Today {

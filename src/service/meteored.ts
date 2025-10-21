@@ -23,6 +23,7 @@ export async function MeteoredService(): Promise<string> {
     const html = await response.text();
     const $ = cheerio.load(html);
 
+    //PREVISÃO PARA SEMANA
     const meteored = $(".dia")
       .map((_, el) => {
         const $el = $(el);
@@ -68,10 +69,11 @@ export async function MeteoredService(): Promise<string> {
       try {
         await meteoredRep.save(item);
       } catch (error) {
-        console.error("Meteored error: ", error);
+        console.error(`METEORED, falha ao salvar: ${item.date}, causa:`, error);
       }
     }
 
+    //PREVISÃO PROXIMAS HORAS
     const nexthours = $(".tabla-horas.dos-semanas tr").map((_, el) => {
       const img = $(el).find(".simbolo-pred img");
       const more = $(el).next(".detalleH");
@@ -95,6 +97,7 @@ export async function MeteoredService(): Promise<string> {
         pres: more.find(".iPres").parent().find("strong").text().trim(),
         ifps: $(el).find(".iUVi").parent().find("strong").text().trim(),
         icon: img.attr("src") || "",
+        cidadeId: 1
       };
     }).get().filter(Boolean);
 
@@ -104,10 +107,11 @@ export async function MeteoredService(): Promise<string> {
         if(item.hour === '24:00') item.hour = '00:00';
         await nexthourRep.save(item);
       } catch (error) {
-        console.error("Não foi possivel salvar as proximas horas:", error);
+        console.error(`NETXHOUR, falha ao salvar: ${item.hour}, causa:`, error);
       }
-    }
+    }  
 
+    //PREVISÃO PARA O DIA
     const today = (() => {
       const card = $(".card.salida_sol.salida-puesta-sol");
       const $air = $('#calidad-aire');
@@ -124,7 +128,7 @@ export async function MeteoredService(): Promise<string> {
         desc: $air.find('.tipo-calidad').text().trim(),
         valu: $air.find('.tipo-contaminante').text().trim(),
         info: $air.find('.lista-calidad li').eq(0).text().trim(),
-        cidade: 1,
+        cidadeId: 1
       };
     })();
 
@@ -133,12 +137,11 @@ export async function MeteoredService(): Promise<string> {
       try {
         await todayRep.save(today);
       } catch (error) {
-        console.error("Today error: ", error);
+        console.error(`TODAY, falha ao salvar: ${today.date}, causa:`, error);
       }
-    } else {
-      console.warn("No data available for Today.");
     }
-
+  
+    //CALENDARIO LUNAR
     const lunar = $(".card.lunas .fases-luna tr")
       .map((_, tr) => {
         return $(tr).find("td")
@@ -149,12 +152,11 @@ export async function MeteoredService(): Promise<string> {
 
             if (img.length > 0) {
               return {
-                day: dayText.padStart(2, '0'),
+                day:  dayText.padStart(2, '0'),
                 name: img.attr("alt"),
                 icon: img.attr("src")
               };
-            }    
-            console.log('falha calendario lunar')        
+            }         
           })
           .get();
       }).get().filter(Boolean);
@@ -164,12 +166,13 @@ export async function MeteoredService(): Promise<string> {
       try {
         await lunarRep.save(item);
       } catch (error) {
-        console.error("Não foi possível salvar calendário lunar: ", error);
+        console.error(`LUNAR, falha ao salvar: ${item.day}, causa:`, error);
       }
     }
+   
     await WeekService();
   } catch (error) {
-    console.error(`Erro ao acessar`, error);
+    console.error(`Conexão recusada:\nhttps://www.tempo.pt/palmas_brasil-l116480.htm`, error);
     return 'erro ao buscar dados meteorologicos';
   }
   return "meteored success"
@@ -217,6 +220,7 @@ async function WeekService() {
           icon: $el.find(".simbW").attr("src") || "",
           rain: $el.find(".precip .changeUnitR").text().trim(),
           prov: $el.find(".precip .probabilidad").text().trim(),
+          cidadeId: 1
         };
       })
       .get();
@@ -226,12 +230,12 @@ async function WeekService() {
       try {
         await meteoredRep.save(item);
       } catch (error) {
-        console.error("Meteored error: ", error);
+        console.error(`METEORED, falha ao salvar proxima semana: ${item.date}, causa:`, error);
       }
     }
   } catch (error) {
-    console.error(`Erro ao acessar`, error);
+    console.error(`Conexão recusada:\nhttps://www.tempo.com/palmas_parana-l116480.htm?d=proxima-semana`, error);
     return null;
   }
-  return "meteored success"
+  return "integração tempo.com realizada com sucesso"
 }
