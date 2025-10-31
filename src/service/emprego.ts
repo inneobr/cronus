@@ -58,18 +58,14 @@ export default async function EmpregoService(): Promise<string> {
       }
     }
 
-    const vagasBanco = await empregoRep.findByCidade(2);
-    const vagasAtuais = new Set(vagas.map(v => v.name));
+   const vagasBanco = await empregoRep.findByCidade(1);
+    const chavesAtuais = new Set(vagas.map(v => JSON.stringify({ name: v.name, details: v.details })));
 
-    for (const item of vagasBanco.filter(Boolean)) {
-      if (!vagasAtuais.has(item.name)) {
-        try {
-          await empregoRep.update(item.id);
-        } catch (error) {
-          console.error(`EMPREGO, falha ao encerrar vaga: ${item.name}, causa:`, error);
-        }
-      }
-    }
+    const vagasDesatualizadas = vagasBanco.filter(v => {
+      const chave = JSON.stringify({ name: v.name, details: v.details });
+      return !chavesAtuais.has(chave);
+    });
+    await Promise.all(vagasDesatualizadas.map(v => empregoRep.update(v.id)));
 
   } catch (error) {
     console.error(`Conexão recusada:\nhttps://pmp.pr.gov.br/website/views/vagasEmprego.php`, error);

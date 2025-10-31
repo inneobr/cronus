@@ -18,6 +18,7 @@
     "node-cron": "^4.2.1",
     "oracledb": "^6.9.0",
     "reflect-metadata": "^0.2.2",
+    "source-map": "^0.7.6",
     "typeorm": "^0.3.26"
   },
   "devDependencies": {
