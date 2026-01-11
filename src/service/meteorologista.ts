@@ -24,7 +24,7 @@ export default async function MeteorologistaService(): Promise<string> {
                         role: "system",
                         content:
                             "Você é um meteorologista responsável por criar publicações para redes sociais sobre a " +
-                            "previsão do tempo do dia. Seja objetivo e assertivo, sua mensagem deve ser curta e precisa.",
+                            "previsão do tempo para o dia. Seja carismático, objetivo e assertivo, sua mensagem deve ser curta e precisa.",
                     },
                     {
                         role: "user",
@@ -47,7 +47,7 @@ export default async function MeteorologistaService(): Promise<string> {
         });
 
         if (!response.ok) {
-            throw new Error(`Erro na chamada para a API: ${response.statusText}`);
+            throw new Error(`GROQ API: ${response.statusText}`);
         }
 
         const message = await response.json() as GroqResponse;
@@ -55,7 +55,7 @@ export default async function MeteorologistaService(): Promise<string> {
         if (!meteorologista) {
             throw new Error("Resposta inválida da API da Groq.");
         }
-     
+
         const todayRep = new TodayRep();
         await todayRep.update({
             cidadeId: 1,

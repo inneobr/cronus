@@ -5,17 +5,15 @@ import { DataSource } from "typeorm";
 import 'reflect-metadata';
 import 'dotenv/config';
 import { Today } from "@/domain/Today.js";
-import { Emprego } from "@/domain/Emprego.js";
 import { Lunar } from "@/domain/Lunar.js";
 import { Nexthour } from "@/domain/Nexthour.js";
-import { Prefeitura } from "@/domain/Prefeitura.js";
 
 export const oracle = new DataSource({
-    type: "oracle",
-    connectString: process.env.DATABASE_HOSTNAME || "",
-    username: process.env.DATABASE_USERNAME || "",
-    password: process.env.DATABASE_PASSWORD || "",
-    entities: [Cidade, Today, Meteored, Nexthour, Lunar, Emprego, Prefeitura],
+  type: "oracle",
+  connectString: process.env.DATABASE_HOSTNAME || "",
+  username: process.env.DATABASE_USERNAME || "",
+  password: process.env.DATABASE_PASSWORD || "",
+  entities: [Cidade, Today, Meteored, Nexthour, Lunar],
 });
 
 // Função utilitária para pegar variáveis obrigatórias
@@ -37,7 +35,7 @@ const connectString = requireEnv("DATABASE_HOSTNAME");
 export async function initOracle() {
   if (!username || !password || !connectString) {
     console.error("Credenciais do Oracle não configuradas.");
-    return; 
+    return;
   }
 
   try {

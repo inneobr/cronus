@@ -1,0 +1,38 @@
+name: CD - Deploy
+
+on:
+  workflow_run:
+    workflows: ["CI - Build Image"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Kubectl
+      uses: azure/setup-kubectl@v3
+
+    - name: Setup Helm
+      uses: azure/setup-helm@v4
+
+    - name: Setup Minikube (local)
+      if: ${{ secrets.CLUSTER_TYPE == 'minikube' }}
+      uses: medyagh/setup-minikube@latest
+
+    - name: Configurar kubeconfig (cloud)
+      if: ${{ secrets.CLUSTER_TYPE == 'cloud' }}
+      run: |
+        echo "${{ secrets.KUBECONFIG_DATA }}" | base64 -d > $HOME/.kube/config
+
+    - name: Deploy Helm
+      run: |
+        helm upgrade --install cronus helm/cronus \
+          --set image.tag=latest \
+          --set env.DATABASE_HOSTNAME=${{ secrets.DATABASE_HOSTNAME }} \
+          --set env.DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }} \
+          --set env.DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }} \
+          --set env.GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}
