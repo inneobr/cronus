@@ -36,3 +36,30 @@ jobs:
           --set env.DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }} \
           --set env.DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }} \
           --set env.GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}
+
+    - name: Setup cloudflared
+      run: |
+        # Instala cloudflared
+        curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
+        chmod +x cloudflared
+        sudo mv cloudflared /usr/local/bin/
+
+    - name: Configurar credenciais do túnel
+      run: |
+        mkdir -p $HOME/.cloudflared
+        echo "${{ secrets.CLOUDFLARED_CREDENTIALS }}" > $HOME/.cloudflared/cronus-tunnel.json
+
+    - name: Criar config do túnel
+      run: |
+        cat <<EOF > $HOME/.cloudflared/config.yml
+        tunnel: cronus-tunnel
+        credentials-file: $HOME/.cloudflared/cronus-tunnel.json
+        ingress:
+          - hostname: cronus.inneo.org
+            service: http://127.0.0.1:30080
+          - service: http_status:404
+        EOF
+
+    - name: Rodar tunnel
+      run: |
+        cloudflared tunnel --config $HOME/.cloudflared/config.yml run cronus-tunnel &
