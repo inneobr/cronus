@@ -1,0 +1,6 @@
+apiVersion: v2
+name: meteored
+description: "Chart Meteored previsão do tempo"
+type: application 
+version: 1.0.0 
+appVersion: "latest"

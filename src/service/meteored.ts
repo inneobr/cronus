@@ -104,12 +104,12 @@ export async function MeteoredService(): Promise<string> {
     const nexthourRep = new NexthourRep();
     for (const item of nexthours) {
       try {
-        if(item.hour === '24:00') item.hour = '00:00';
+        if (item.hour === '24:00') item.hour = '00:00';
         await nexthourRep.save(item);
       } catch (error) {
         console.error(`NETXHOUR, falha ao salvar: ${item.hour}, causa:`, error);
       }
-    }  
+    }
 
     //PREVISÃO PARA O DIA
     const today = (() => {
@@ -140,7 +140,7 @@ export async function MeteoredService(): Promise<string> {
         console.error(`TODAY, falha ao salvar: ${today.date}, causa:`, error);
       }
     }
-  
+
     //CALENDARIO LUNAR
     const lunar = $(".card.lunas .fases-luna tr")
       .map((_, tr) => {
@@ -152,11 +152,11 @@ export async function MeteoredService(): Promise<string> {
 
             if (img.length > 0) {
               return {
-                day:  dayText.padStart(2, '0'),
+                day: dayText.padStart(2, '0'),
                 name: img.attr("alt"),
                 icon: img.attr("src")
               };
-            }         
+            }
           })
           .get();
       }).get().filter(Boolean);
@@ -169,8 +169,8 @@ export async function MeteoredService(): Promise<string> {
         console.error(`LUNAR, falha ao salvar: ${item.day}, causa:`, error);
       }
     }
-   
-    await WeekService();
+
+    //await WeekService();
   } catch (error) {
     console.error(`Conexão recusada:\nhttps://www.tempo.pt/palmas_brasil-l116480.htm`, error);
     return 'erro ao buscar dados meteorologicos';
