@@ -169,8 +169,6 @@ export async function MeteoredService(): Promise<string> {
         console.error(`LUNAR, falha ao salvar: ${item.day}, causa:`, error);
       }
     }
-
-    //await WeekService();
   } catch (error) {
     console.error(`Conexão recusada:\nhttps://www.tempo.pt/palmas_brasil-l116480.htm`, error);
     return 'erro ao buscar dados meteorologicos';
@@ -178,7 +176,7 @@ export async function MeteoredService(): Promise<string> {
   return "meteored success"
 }
 
-async function WeekService() {
+export async function WeekService() {
   try {
     const response = await fetch("https://www.tempo.com/palmas_parana-l116480.htm?d=proxima-semana", {
       headers: {

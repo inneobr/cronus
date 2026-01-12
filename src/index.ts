@@ -1,6 +1,6 @@
 import cron from "node-cron";
 import { initOracle } from '@/config/source.js';
-import { MeteoredService } from '@/service/meteored.js';
+import { MeteoredService, WeekService } from '@/service/meteored.js';
 import MeteorologistaService from "./service/meteorologista.js";
 
 async function main() {
@@ -8,14 +8,15 @@ async function main() {
   await MeteoredService();
   await MeteorologistaService();
 
-  cron.schedule("0 * * * *", async () => {
-    await MeteoredService();
-  });
-
   cron.schedule("0 */6 * * *", async () => {
+    await MeteoredService();
     await MeteorologistaService();
   });
-  console.log(`CRONUS v1.0!`);
+
+  cron.schedule("0 */12 * * *", async () => {
+    await WeekService();
+  });
+  console.log(`CRONUS v1.1!`);
 }
 
 main().catch((err) => {
